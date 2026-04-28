@@ -13,14 +13,20 @@ import {
   Tag,
   Popconfirm,
 } from 'antd'
-import { ShopOutlined, OrderedListOutlined, LogoutOutlined, PlusOutlined } from '@ant-design/icons'
+import { ShopOutlined, OrderedListOutlined, LogoutOutlined, PlusOutlined, SettingOutlined } from '@ant-design/icons'
 import { useAuth } from '../contexts/AuthContext'
 import api from '../utils/request'
 
 export const ManageDashboard: React.FC = () => {
   const { manageLogout } = useAuth() as any
   const navigate = useNavigate()
-  const [activeTab, setActiveTab] = useState('products')
+  const [activeTab, setActiveTab] = useState<'products'|'orders'|'payment'>('products')
+  const [contentKey, setContentKey] = useState('products')
+
+  const handleTabChange = (tab: typeof activeTab) => {
+    setContentKey(tab)
+    setActiveTab(tab)
+  }
 
   const handleLogout = () => {
     manageLogout()
@@ -45,17 +51,24 @@ export const ManageDashboard: React.FC = () => {
         <div style={styles.navList}>
           <button
             style={activeTab === 'products' ? styles.navItemActive : styles.navItem}
-            onClick={() => setActiveTab('products')}
+            onClick={() => handleTabChange('products')}
           >
             <ShopOutlined style={{ marginRight: 10, fontSize: 14 }} />
             <span style={{ fontFamily: "'PingFang SC', 'Courier New', monospace" }}>商品管理</span>
           </button>
           <button
             style={activeTab === 'orders' ? styles.navItemActive : styles.navItem}
-            onClick={() => setActiveTab('orders')}
+            onClick={() => handleTabChange('orders')}
           >
             <OrderedListOutlined style={{ marginRight: 10, fontSize: 14 }} />
             <span style={{ fontFamily: "'PingFang SC', 'Courier New', monospace" }}>订单管理</span>
+          </button>
+          <button
+            style={activeTab === 'payment' ? styles.navItemActive : styles.navItem}
+            onClick={() => handleTabChange('payment')}
+          >
+            <SettingOutlined style={{ marginRight: 10, fontSize: 14 }} />
+            <span style={{ fontFamily: "'PingFang SC', 'Courier New', monospace" }}>支付配置</span>
           </button>
         </div>
         <div style={styles.sidebarBottom}>
@@ -85,10 +98,165 @@ export const ManageDashboard: React.FC = () => {
 
         {/* 内容区 */}
         <div style={styles.content}>
-          {activeTab === 'products' && <ProductManage />}
-          {activeTab === 'orders' && <OrderManage />}
+          <div
+            key={contentKey}
+            style={{ animation: 'fadeSlideIn 0.3s ease-out' }}
+          >
+            {activeTab === 'products' && <ProductManage />}
+            {activeTab === 'orders' && <OrderManage />}
+            {activeTab === 'payment' && <PaymentManage />}
+          </div>
         </div>
-      </div></div>
+      </div>
+    </div>
+  )
+}
+
+// ============ 支付配置 ============
+const PaymentManage: React.FC = () => {
+  const [configs, setConfigs] = useState<any[]>([])
+  const [loading, setLoading] = useState(false)
+  const [modalVisible, setModalVisible] = useState(false)
+  const [current, setCurrent] = useState<any>(null)
+  const [form] = Form.useForm()
+
+  const fetchConfigs = async () => {
+    setLoading(true)
+    try {
+      const res: any = await api.get('/payment-configs', {
+        headers: { Authorization: `Bearer ${localStorage.getItem('manage_token')}` },
+      })
+      setConfigs(res.data || [])
+    } catch {
+      message.error('加载配置失败')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  useEffect(() => { fetchConfigs() }, [])
+
+  const handleSubmit = async (values: any) => {
+    try {
+      const payload = { ...values, id: current?.id }
+      if (current) {
+        await api.put(`/payment-configs/${current.id}`, payload, {
+          headers: { Authorization: `Bearer ${localStorage.getItem('manage_token')}` },
+        })
+      } else {
+        await api.post('/payment-configs', payload, {
+          headers: { Authorization: `Bearer ${localStorage.getItem('manage_token')}` },
+        })
+      }
+      message.success('保存成功')
+      setModalVisible(false)
+      setCurrent(null)
+      form.resetFields()
+      fetchConfigs()
+    } catch {
+      message.error('保存失败')
+    }
+  }
+
+  const payTypeMap: Record<string, string> = {
+    alipay: '支付宝', wxpay: '微信支付', epay: '易支付',
+  }
+
+  return (
+    <div>
+      <div style={{ marginBottom: 16 }}>
+        <Button
+          type="primary"
+          icon={<PlusOutlined />}
+          style={styles.btnPrimary}
+          onClick={() => { setCurrent(null); form.resetFields(); setModalVisible(true) }}
+        >
+          添加配置
+        </Button>
+      </div>
+      <Table
+        dataSource={configs}
+        rowKey="id"
+        loading={loading}
+        columns={[
+          { title: 'ID', dataIndex: 'id', width: 60 },
+          {
+            title: '类型', dataIndex: 'pay_type', render: (v: string) =>
+              <Tag style={payTypeMap[v] === '支付宝' ? styles.tagBlue : payTypeMap[v] === '微信支付' ? styles.tagGreen : styles.tagRed}>
+                {payTypeMap[v] || v}
+              </Tag>,
+          },
+          { title: '网关地址', dataIndex: 'gateway_url', ellipsis: true },
+          { title: '商户ID(PID)', dataIndex: 'pid' },
+          { title: '状态', dataIndex: 'status', render: (v: number) =>
+            v === 1
+              ? <Tag style={styles.tagGreen}>启用</Tag>
+              : <Tag style={styles.tagRed}>禁用</Tag>,
+          },
+          {
+            title: '操作', render: (_: any, record: any) => (
+              <Space>
+                <Button size="small" style={styles.smallBtnPrimary} onClick={() => { setCurrent(record); form.setFieldsValue(record); setModalVisible(true) }}>编辑</Button>
+                <Popconfirm title="确定删除？" onConfirm={async () => {
+                  try {
+                    await api.delete(`/payment-configs/${record.id}`, {
+                      headers: { Authorization: `Bearer ${localStorage.getItem('manage_token')}` },
+                    })
+                    message.success('删除成功')
+                    fetchConfigs()
+                  } catch { message.error('删除失败') }
+                }}>
+                  <Button size="small" style={styles.smallBtnDanger}>删除</Button>
+                </Popconfirm>
+              </Space>
+            ),
+          },
+        ]}
+      />
+      <Modal
+        open={modalVisible}
+        title={current ? '编辑支付配置' : '添加支付配置'}
+        onCancel={() => { setModalVisible(false); setCurrent(null); form.resetFields() }}
+        footer={null}
+      >
+        <Form form={form} layout="vertical" onFinish={handleSubmit} style={{ marginTop: 20 }}>
+          <Form.Item name="pay_type" label="支付类型" rules={[{ required: true }]}>
+            <Select placeholder="选择支付类型">
+              <Select.Option value="alipay">支付宝</Select.Option>
+              <Select.Option value="wxpay">微信支付</Select.Option>
+              <Select.Option value="epay">易支付</Select.Option>
+            </Select>
+          </Form.Item>
+          <Form.Item name="gateway_url" label="网关地址" rules={[{ required: true }]}>
+            <Input placeholder="例如：https://pay.example.com/submit.php" />
+          </Form.Item>
+          <Form.Item name="pid" label="商户ID (PID)" rules={[{ required: true }]}>
+            <Input placeholder="输入商户ID" />
+          </Form.Item>
+          <Form.Item name="key" label="密钥 (Key)" rules={[{ required: true }]}>
+            <Input.Password placeholder="输入密钥" />
+          </Form.Item>
+          <Form.Item name="notify_url" label="回调地址">
+            <Input placeholder="留空则使用系统默认" />
+          </Form.Item>
+          <Form.Item name="return_url" label="返回地址">
+            <Input placeholder="支付完成后跳转页面" />
+          </Form.Item>
+          <Form.Item name="status" label="状态" initialValue={1}>
+            <Select>
+              <Select.Option value={1}>启用</Select.Option>
+              <Select.Option value={0}>禁用</Select.Option>
+            </Select>
+          </Form.Item>
+          <Form.Item style={{ marginBottom: 0, textAlign: 'right' }}>
+            <Space>
+              <Button onClick={() => { setModalVisible(false); setCurrent(null); form.resetFields() }}>取消</Button>
+              <Button type="primary" htmlType="submit" style={styles.btnPrimary}>保存</Button>
+            </Space>
+          </Form.Item>
+        </Form>
+      </Modal>
+    </div>
   )
 }
 
@@ -173,7 +341,7 @@ const ProductManage: React.FC = () => {
       width: 100,
       render: (v: number) => <span style={{ color: '#ff00aa', fontWeight: 700 }}>¥{v?.toFixed(2)}</span>,
     },
-    { title: '库存', dataIndex: 'stock', width: 80 },
+    { title: '库存', dataIndex: 'stock', width: 80, render: (v: number) => <span style={{ color: '#4a4a6a', fontSize: 12 }}>{v ?? 0}</span> },
     { title: '已售', dataIndex: 'sold_count', width: 80 },
     {
       title: '状态',
@@ -247,10 +415,7 @@ const ProductManage: React.FC = () => {
           <Form.Item name="price" label="价格" rules={[{ required: true, message: '请输入价格' }]}>
             <Input placeholder="输入商品价格" />
           </Form.Item>
-          <Form.Item name="stock" label="初始库存" initialValue={0}>
-            <Input placeholder="输入初始库存数量" />
-          </Form.Item>
-          <Form.Item name="status" label="状态" initialValue={1}>
+          <Form.Item name="status" label="状态" initialValue={current?.status ?? 1}>
             <Select style={{ width: '100%' }}>
               <Select.Option value={1}>上架</Select.Option>
               <Select.Option value={0}>下架</Select.Option>

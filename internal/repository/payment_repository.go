@@ -18,6 +18,10 @@ func (r *PaymentConfigRepository) Create(config *model.PaymentConfig) error {
 	return r.db.Create(config).Error
 }
 
+func (r *PaymentConfigRepository) FindByID(id uint) *gorm.DB {
+	return r.db.First(&model.PaymentConfig{}, id)
+}
+
 func (r *PaymentConfigRepository) FindByMerchantAndType(merchantID uint, payType string) (*model.PaymentConfig, error) {
 	var config model.PaymentConfig
 	err := r.db.Where("merchant_id = ? AND pay_type = ?", merchantID, payType).First(&config).Error

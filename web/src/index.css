@@ -113,7 +113,7 @@ code {
   background: var(--code-bg);
 }
 
-/* ===== 赛博朋克全局覆盖 ===== */
+/* ===== 璧涘崥鏈嬪厠鍏ㄥ眬瑕嗙洊 ===== */
 body {
   background: #050510 !important;
   color: #e0e0ff;
@@ -125,7 +125,7 @@ body {
   text-align: left !important;
 }
 
-/* Ant Design Modal 赛博风 */
+/* Ant Design Modal 璧涘崥椋?*/
 .ant-modal-content {
   background: #0a0a14 !important;
   border: 1px solid #00f0ff !important;
@@ -165,7 +165,7 @@ body {
   box-shadow: 0 0 10px rgba(0,240,255,0.2) !important;
 }
 
-/* Ant Design Form 赛博风 */
+/* Ant Design Form 璧涘崥椋?*/
 .ant-form-item-label > label {
   color: #00f0ff !important;
   font-family: 'Courier New', monospace !important;
@@ -175,7 +175,7 @@ body {
 }
 .ant-form-item { margin-bottom: 16px !important; }
 
-/* Ant Design Input 赛博风 */
+/* Ant Design Input 璧涘崥椋?*/
 .ant-input,
 .ant-input-number {
   background: #050510 !important;
@@ -198,7 +198,7 @@ body {
 .ant-input-number-handler-up-inner,
 .ant-input-number-handler-down-inner { color: #00f0ff !important; }
 
-/* Ant Design Table 赛博风 */
+/* Ant Design Table 璧涘崥椋?*/
 .ant-table { background: transparent !important; }
 .ant-table-thead > tr > th {
   background: rgba(0,240,255,0.06) !important;
@@ -223,7 +223,7 @@ body {
 .ant-pagination-item-active { border-color: #00f0ff !important; }
 .ant-pagination-item-active a { color: #00f0ff !important; }
 
-/* Ant Design 其他组件 */
+/* Ant Design 鍏朵粬缁勪欢 */
 .ant-popconfirm .ant-popover-inner {
   background: #0a0a14 !important;
   border: 1px solid #1a1a3a !important;
@@ -231,7 +231,7 @@ body {
 .ant-popconfirm .ant-popover-message-title { color: #e0e0ff !important; }
 .ant-popconfirm .ant-popover-message-icon { color: #ff8800 !important; }
 
-/* 通用深色覆盖 */
+/* 閫氱敤娣辫壊瑕嗙洊 */
 .ant-select-dropdown {
   background: #0a0a14 !important;
   border: 1px solid #1a1a3a !important;
@@ -240,10 +240,14 @@ body {
 .ant-select-item-option-active { background: rgba(0,240,255,0.06) !important; }
 .ant-select-item-option-selected { background: rgba(0,240,255,0.1) !important; }
 
-/* Message 提示框 */
+/* Message 鎻愮ず妗?*/
 .ant-message .ant-message-notice-content {
   background: #0a0a14 !important;
   border: 1px solid #00f0ff !important;
   color: #00f0ff !important;
   border-radius: 2px !important;
 }
+
+@keyframes fadeSlideIn { 0% { opacity: 0; transform: translateY(8px); } 100% { opacity: 1; transform: translateY(0); } }
+
+

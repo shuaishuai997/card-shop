@@ -26,7 +26,6 @@ export const ProductBuy: React.FC = () => {
   const [loading, setLoading] = useState(true)
   const [quantity, setQuantity] = useState(1)
   const [buyerEmail, setBuyerEmail] = useState('')
-  const [buyerPhone, setBuyerPhone] = useState('')
   const [submitting, setSubmitting] = useState(false)
 
   useEffect(() => {
@@ -60,7 +59,7 @@ export const ProductBuy: React.FC = () => {
           product_id: product.id,
           quantity,
           buyer_email: buyerEmail,
-          buyer_phone: buyerPhone,
+
         }),
       }).then(r => r.json())
 
@@ -83,7 +82,7 @@ export const ProductBuy: React.FC = () => {
         <div style={styles.loadingBox}>
           <Spin size="large" />
           <p style={{ color: '#00f0ff', marginTop: 20, fontFamily: 'monospace', letterSpacing: 2 }}>
-            LOADING...
+            系统加载中...
           </p>
         </div>
       </div>
@@ -94,7 +93,7 @@ export const ProductBuy: React.FC = () => {
     return (
       <div style={styles.container}>
         <div style={styles.center}>
-          <p style={styles.errText}>// PRODUCT NOT FOUND</p>
+          <p style={styles.errText}>// 商品详情 NOT FOUND</p>
           <Link to="/" style={styles.backLink}>← 返回首页</Link>
         </div>
       </div>
@@ -126,8 +125,8 @@ export const ProductBuy: React.FC = () => {
         <Breadcrumb
           style={{ marginBottom: 24 }}
           items={[
-            { title: <Link to="/" style={{ color: '#6a6a9a' }}>HOME</Link> },
-            { title: <span style={{ color: '#00f0ff' }}>PRODUCT</span> },
+            { title: <Link to="/" style={{ color: '#6a6a9a' }}>首页</Link> },
+            { title: <span style={{ color: '#00f0ff' }}>商品详情</span> },
           ]}
         />
 
@@ -152,13 +151,13 @@ export const ProductBuy: React.FC = () => {
           <Col xs={24} md={14}>
             {/* 标题 */}
             <div style={styles.titleSection}>
-              <div style={styles.titleId}>// ITEM_{product.id}</div>
+              <div style={styles.titleId}>// 商品_{product.id}</div>
               <h1 style={styles.productName}>{product.name}</h1>
               <div style={styles.tagRow}>
                 <span style={product.stock > 0 ? styles.tagGreen : styles.tagRed}>
-                  {product.stock > 0 ? `[ IN STOCK: ${product.stock} ]` : '[ OUT OF STOCK ]'}
+                  {product.stock > 0 ? `[ 有货: ${product.stock} ]` : '[ 缺货 ]'}
                 </span>
-                <span style={styles.soldCount}>SOLD: {product.sold_count || 0}</span>
+                <span style={styles.soldCount}>已售: {product.sold_count || 0}</span>
               </div>
             </div>
 
@@ -168,14 +167,14 @@ export const ProductBuy: React.FC = () => {
                 <span style={styles.priceUnit}>¥</span>
                 <span style={styles.priceValue}>{product.price.toFixed(2)}</span>
               </div>
-              <span style={styles.priceUnitLabel}>/ UNIT</span>
+              <span style={styles.priceUnitLabel}>/ 件</span>
             </div>
 
             <div style={styles.divider} />
 
             {/* 描述 */}
             <div style={styles.descSection}>
-              <div style={styles.sectionLabel}>// DESCRIPTION</div>
+              <div style={styles.sectionLabel}>// 商品描述</div>
               <p style={styles.descText}>
                 {product.description || '数字商品，自动发货，购买后秒级收到卡密。'}
               </p>
@@ -184,9 +183,9 @@ export const ProductBuy: React.FC = () => {
             {/* 特性 */}
             <div style={styles.features}>
               {[
-                { icon: '⚡', text: '自动发货，秒级到账' },
-                { icon: '🔒', text: '资金由平台托管保障' },
-                { icon: '📧', text: '卡密发送至您的邮箱' },
+                { icon: '⚡', text: '自动发货' },
+                { icon: '🔒', text: '资金托管' },
+                { icon: '📧', text: '卡密到邮箱' },
               ].map((f, i) => (
                 <div key={i} style={styles.featureItem}>
                   <span style={styles.featureIcon}>{f.icon}</span>
@@ -199,23 +198,41 @@ export const ProductBuy: React.FC = () => {
 
             {/* 购买表单 */}
             <div style={styles.orderForm}>
-              <div style={styles.sectionLabel}>// PURCHASE FORM</div>
+              <div style={styles.sectionLabel}>// 购买信息</div>
 
               <div style={styles.formRow}>
-                <span style={styles.formLabel}>QUANTITY</span>
-                <InputNumber
-                  min={1}
-                  max={product.stock}
+                <span style={styles.formLabel}>数量</span>
+                <Input
+                  placeholder="请输入购买数量"
                   value={quantity}
-                  onChange={v => setQuantity(v || 1)}
-                  style={styles.inputNumber}
+                  onChange={e => {
+                    const v = e.target.value
+                    const n = parseInt(v, 10)
+                    if (!isNaN(n) && n > 0) {
+                      setQuantity(n)
+                    } else if (v === '') {
+                      setQuantity(1)
+                    }
+                  }}
+                  onBlur={e => {
+                    const v = e.target.value
+                    const n = parseInt(v, 10)
+                    if (isNaN(n) || n < 1) {
+                      setQuantity(1)
+                      message.warning('数量最少为1')
+                    } else if (product && n > product.stock) {
+                      setQuantity(product.stock)
+                      message.warning(`库存不足，最多${product.stock}`)
+                    }
+                  }}
+                  style={styles.input}
                 />
                 <span style={styles.formHint}>MAX: {product.stock}</span>
               </div>
 
               <div style={styles.formRow}>
                 <span style={styles.formLabel}>
-                  EMAIL <span style={{ color: '#ff3366' }}>*</span>
+                  邮箱 <span style={{ color: '#ff3366' }}>*</span>
                 </span>
                 <Input
                   placeholder="用于接收卡密，请务必填写正确"
@@ -225,19 +242,9 @@ export const ProductBuy: React.FC = () => {
                 />
               </div>
 
-              <div style={styles.formRow}>
-                <span style={styles.formLabel}>PHONE (OPTIONAL)</span>
-                <Input
-                  placeholder="接收发货通知（选填）"
-                  value={buyerPhone}
-                  onChange={e => setBuyerPhone(e.target.value)}
-                  style={styles.input}
-                />
-              </div>
-
               {/* 总额 */}
               <div style={styles.totalRow}>
-                <span style={styles.totalLabel}>TOTAL</span>
+                <span style={styles.totalLabel}>合计</span>
                 <span style={styles.totalValue}>¥{(product.price * quantity).toFixed(2)}</span>
               </div>
 
@@ -251,7 +258,7 @@ export const ProductBuy: React.FC = () => {
                 disabled={product.stock === 0}
                 style={product.stock === 0 ? styles.buyBtnDisabled : styles.buyBtn}
               >
-                {product.stock === 0 ? '[ UNAVAILABLE ]' : '[ SUBMIT ORDER ]'}
+                {product.stock === 0 ? '[ 暂不可购买 ]' : '[ 提交订单 ]'}
               </Button>
             </div>
           </Col>
@@ -308,7 +315,7 @@ const styles: Record<string, React.CSSProperties> = {
     animation: 'pulse 3s infinite',
   },
   navInner: {
-    maxWidth: 1100,
+  
     margin: '0 auto',
     display: 'flex',
     alignItems: 'center',
@@ -367,7 +374,7 @@ const styles: Record<string, React.CSSProperties> = {
   content: {
     maxWidth: 1100,
     margin: '0 auto',
-    padding: '32px 32px 60px',
+    padding: '20px 0',
     position: 'relative',
     zIndex: 1,
   },
@@ -534,7 +541,7 @@ const styles: Record<string, React.CSSProperties> = {
   },
   features: {
     display: 'flex',
-    flexDirection: 'column',
+   
     gap: 8,
     marginBottom: 4,
   },

@@ -86,7 +86,7 @@ export const Store: React.FC = () => {
         <div style={styles.scanLine} />
 
         <div style={styles.heroContent}>
-          <div style={styles.heroBadge}>// AUTO-DELIVERY SYSTEM v2.0</div>
+          <div style={styles.heroBadge}>// 全自动发卡系统 v2.0</div>
           <h1 style={styles.heroTitle}>
             <span style={styles.titleCyber}>CYBER</span>
             <span style={styles.titleSlash}> / </span>
@@ -121,7 +121,7 @@ export const Store: React.FC = () => {
         {filteredProducts.length > 0 && (
           <div style={styles.sectionHeader}>
             <div style={styles.sectionLine} />
-            <span style={styles.sectionTitle}>// PRODUCT LIST</span>
+            <span style={styles.sectionTitle}>// 商品列表</span>
             <span style={styles.sectionCount}>[{filteredProducts.length}]</span>
             <div style={styles.sectionLine} />
           </div>
@@ -140,7 +140,7 @@ export const Store: React.FC = () => {
               image={Empty.PRESENTED_IMAGE_SIMPLE}
               description={
                 <span style={{ color: '#4a4a6a' }}>
-                  {keyword ? '// NO RESULT FOUND' : '// NO PRODUCT AVAILABLE'}
+                  {keyword ? '// 无搜索结果' : '// 暂无商品'}
                 </span>
               }
             />
@@ -179,7 +179,7 @@ export const Store: React.FC = () => {
                 <div style={styles.cardBody}>
                   <h3 style={styles.productName}>{product.name}</h3>
                   <div style={styles.cardMeta}>
-                    <span style={styles.soldCount}>SOLD: {product.sold_count || 0}</span>
+                    <span style={styles.soldCount}>已售: {product.sold_count || 0}</span>
                     {getStockStatus(product.stock)}
                   </div>
                   <Button
@@ -193,7 +193,7 @@ export const Store: React.FC = () => {
                       if (product.stock > 0) navigate(`/buy/${product.id}`)
                     }}
                   >
-                    {product.stock === 0 ? '[ UNAVAILABLE ]' : '[ PURCHASE NOW ]'}
+                    {product.stock === 0 ? '[ 暂不可购买 ]' : '[ 立即购买 ]'}
                   </Button>
                 </div>
               </Card>

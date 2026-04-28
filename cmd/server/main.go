@@ -41,6 +41,8 @@ func main() {
 	productHandler := handler.NewProductHandler(productService)
 	orderHandler := handler.NewOrderHandler(orderService, productRepo, paymentRepo)
 
+	paymentHandler := handler.NewPaymentHandler(paymentRepo)
+
 	// 初始化路由
 	r := gin.Default()
 	r.Use(middleware.CORS())
@@ -88,6 +90,13 @@ func main() {
 		auth.GET("/orders", orderHandler.List)
 		auth.GET("/merchant/orders", orderHandler.List)
 		auth.GET("/merchant/orders/:id", orderHandler.Get)
+
+		// 支付配置管理
+		auth.GET("/payment-configs", paymentHandler.List)
+		auth.GET("/payment-configs/:id", paymentHandler.Get)
+		auth.POST("/payment-configs", paymentHandler.Save)
+		auth.PUT("/payment-configs/:id", paymentHandler.Save)
+		auth.DELETE("/payment-configs/:id", paymentHandler.Delete)
 	}
 
 	// 管理员路由
