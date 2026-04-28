@@ -8,7 +8,7 @@ const api = axios.create({
 // 请求拦截器
 api.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem('token')
+    const token = localStorage.getItem('manage_token')
     if (token) {
       config.headers.Authorization = `Bearer ${token}`
     }
@@ -23,7 +23,7 @@ api.interceptors.response.use(
   (error) => {
     if (error.response?.status === 401) {
       localStorage.removeItem('token')
-      window.location.href = '/login'
+      window.location.href = '/manage/login'
     }
     return Promise.reject(error.response?.data || error)
   }

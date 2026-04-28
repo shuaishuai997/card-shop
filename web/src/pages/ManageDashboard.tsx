@@ -9,6 +9,7 @@ import {
   Input,
   InputNumber,
   Select,
+  Upload,
   message,
   Tag,
   Popconfirm,
@@ -16,6 +17,7 @@ import {
 import { ShopOutlined, OrderedListOutlined, LogoutOutlined, PlusOutlined, SettingOutlined } from '@ant-design/icons'
 import { useAuth } from '../contexts/AuthContext'
 import api from '../utils/request'
+import { productApi } from '../api/product'
 
 export const ManageDashboard: React.FC = () => {
   const { manageLogout } = useAuth() as any
@@ -366,6 +368,7 @@ const ProductManage: React.FC = () => {
             {record.status === 1 ? '下架' : '上架'}
           </Button>
           <Button size="small" style={styles.smallBtn} onClick={() => handleImportModal(record)}>导入</Button>
+          <Button size="small" style={styles.smallBtn} onClick={() => setUploadImgModal({ visible: true, productId: record.id, name: record.name })}>图片</Button>
           <Popconfirm title="确定删除？" onConfirm={() => handleDelete(record.id)}>
             <Button size="small" danger style={styles.smallBtnDanger}>删</Button>
           </Popconfirm>
@@ -375,6 +378,8 @@ const ProductManage: React.FC = () => {
   ]
 
   const [importModal, setImportModal] = useState({ visible: false, data: '' })
+  const [uploadImgModal, setUploadImgModal] = useState({ visible: false, productId: 0, name: '' })
+  const [uploadFile, setUploadFile] = useState<any>(null)
   const [importTarget, setImportTarget] = useState<any>(null)
 
   const handleImportModal = (product: any) => {
@@ -464,9 +469,64 @@ const ProductManage: React.FC = () => {
           </Button>
         </div>
       </Modal>
+
+      {/* 上传图片 */}
+      <Modal
+        title={'上传商品图片 - ' + uploadImgModal.name}
+        open={uploadImgModal.visible}
+        onCancel={() => {
+          setUploadImgModal({ visible: false, productId: 0, name: '' })
+          setUploadFile(null)
+        }}
+        footer={null}
+      >
+        <div style={{ padding: '16px 0' }}>
+          <Upload.Dragger
+            name="image"
+            beforeUpload={(file: any) => {
+              setUploadFile(file)
+              return false
+            }}
+            showUploadList={false}
+            accept="image/*"
+          >
+            <p style={{ fontSize: 48, margin: 0 }}>&#x2B6F;</p>
+            <p style={{ color: '#6a6a9a', marginTop: 8 }}>点击或拖拽上传图片</p>
+            <p style={{ color: '#4a4a6a', fontSize: 12 }}>支持 JPG/PNG/GIF，大小不超过5MB</p>
+          </Upload.Dragger>
+          {uploadFile && (
+            <div style={{ marginTop: 12, color: '#00f0ff', fontSize: 13 }}>
+              已选: {uploadFile.name}
+            </div>
+          )}
+          <Button
+            type="primary"
+            block
+            style={{ marginTop: 16, border: '1px solid #00f0ff', background: 'rgba(0,240,255,0.1)', color: '#00f0ff', height: 40 }}
+            onClick={async () => {
+              if (!uploadFile) {
+                message.warning('请先选择图片')
+                return
+              }
+              try {
+                const res: any = await productApi.uploadImage(uploadImgModal.productId, uploadFile)
+                message.success('上传成功')
+                setUploadImgModal({ visible: false, productId: 0, name: '' })
+                setUploadFile(null)
+                fetchProducts()
+              } catch (err: any) {
+                message.error(err?.response?.data?.message || '上传失败')
+              }
+            }}
+          >
+            确认上传
+          </Button>
+        </div>
+      </Modal>
     </div>
   )
 }
+
 
 // ============ 订单管理 ============
 const OrderManage: React.FC = () => {
@@ -564,6 +624,7 @@ const OrderManage: React.FC = () => {
 const styles: Record<string, React.CSSProperties> = {
   container: {
     minHeight: '100vh',
+    boxSizing: 'border-box',
     background: '#050510',
     fontFamily: "'Courier New', 'PingFang SC', monospace",
     color: '#e0e0ff',
@@ -586,6 +647,7 @@ const styles: Record<string, React.CSSProperties> = {
     background: '#0a0a1a',
     borderRight: '1px solid #1a1a3a',
     minHeight: '100vh',
+    boxSizing: 'border-box',
     display: 'flex',
     flexDirection: 'column',
     padding: '24px 0',

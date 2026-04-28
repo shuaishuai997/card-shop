@@ -1,8 +1,12 @@
 package handler
 
 import (
+	"fmt"
 	"net/http"
+	"os"
+	"path/filepath"
 	"strconv"
+	"time"
 
 	"card-shop/internal/service"
 
@@ -34,9 +38,9 @@ func (h *ProductHandler) Create(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, gin.H{
-		"code": 0,
+		"code":    0,
 		"message": "创建成功",
-		"data": product,
+		"data":    product,
 	})
 }
 
@@ -56,7 +60,7 @@ func (h *ProductHandler) Update(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, gin.H{
-		"code": 0,
+		"code":    0,
 		"message": "更新成功",
 	})
 }
@@ -71,7 +75,7 @@ func (h *ProductHandler) Delete(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, gin.H{
-		"code": 0,
+		"code":    0,
 		"message": "删除成功",
 	})
 }
@@ -155,7 +159,7 @@ func (h *ProductHandler) UpdateStatus(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, gin.H{
-		"code": 0,
+		"code":    0,
 		"message": "状态更新成功",
 	})
 }
@@ -179,10 +183,56 @@ func (h *ProductHandler) ImportCards(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, gin.H{
-		"code": 0,
+		"code":    0,
 		"message": "导入成功",
 		"data": gin.H{
 			"count": count,
+		},
+	})
+}
+
+// UploadImage 上传商品图片
+func (h *ProductHandler) UploadImage(c *gin.Context) {
+	id, _ := strconv.ParseUint(c.Param("id"), 10, 32)
+
+	file, err := c.FormFile("image")
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"code": 400, "message": "请选择图片文件"})
+		return
+	}
+
+	// 限制文件大小 5MB
+	if file.Size > 5*1024*1024 {
+		c.JSON(http.StatusBadRequest, gin.H{"code": 400, "message": "图片大小不能超过5MB"})
+		return
+	}
+
+	// 保存到 web/public/uploads/
+	filename := fmt.Sprintf("product_%d_%d%s", id, time.Now().UnixNano(), filepath.Ext(file.Filename))
+	uploadsDir := "../web/public/uploads"
+	if err := os.MkdirAll(uploadsDir, 0755); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"code": 500, "message": "目录创建失败"})
+		return
+	}
+
+	savePath := filepath.Join(uploadsDir, filename)
+	if err := c.SaveUploadedFile(file, savePath); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"code": 500, "message": "文件保存失败"})
+		return
+	}
+
+	// 更新数据库 image 字段
+	url := "/uploads/" + filename
+	if err := h.service.UpdateImage(uint(id), url); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"code": 500, "message": "数据库更新失败"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"code":    0,
+		"message": "上传成功",
+		"data": gin.H{
+			"url": url,
 		},
 	})
 }

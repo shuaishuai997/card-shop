@@ -28,13 +28,20 @@ export const productApi = {
 
   // 商户接口
   merchantList: (page = 1, pageSize = 10) =>
-    api.get('/merchant/products', { params: { page, page_size: pageSize } }),
-  create: (data: CreateProductRequest) => api.post('/merchant/products', data),
+    api.get('/products/merchant', { params: { page, page_size: pageSize } }),
+  create: (data: CreateProductRequest) => api.post('/products/merchant', data),
   update: (id: number, data: CreateProductRequest) =>
-    api.put(`/merchant/products/${id}`, data),
-  delete: (id: number) => api.delete(`/merchant/products/${id}`),
+    api.put(`/products/${id}`, data),
+  delete: (id: number) => api.delete(`/products/${id}`),
   updateStatus: (id: number, status: number) =>
-    api.put(`/merchant/products/${id}/status`, { status }),
+    api.put(`/products/${id}/status`, { status }),
   importCards: (id: number, csvData: string) =>
-    api.post(`/merchant/products/${id}/cards`, { csv_data: csvData }),
+    api.post(`/products/${id}/cards`, { csv_data: csvData }),
+  uploadImage: (id: number, file: File) => {
+    const formData = new FormData()
+    formData.append('image', file)
+    return api.post(`/products/${id}/image`, formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    })
+  },
 }

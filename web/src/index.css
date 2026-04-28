@@ -113,16 +113,23 @@ code {
   background: var(--code-bg);
 }
 
-/* ===== 璧涘崥鏈嬪厠鍏ㄥ眬瑕嗙洊 ===== */
+/* ===== cyberpunk global ===== */
+html,
 body {
+  margin: 0;
+  padding: 0;
   background: #050510 !important;
   color: #e0e0ff;
+  overflow-x: hidden;
+  height: 100%;
 }
 
 #root {
   border-inline: none !important;
   background: #050510 !important;
   text-align: left !important;
+  min-height: 100vh;
+  overflow: hidden;
 }
 
 /* Ant Design Modal 璧涘崥椋?*/

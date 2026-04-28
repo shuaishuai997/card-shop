@@ -85,6 +85,7 @@ func main() {
 		auth.DELETE("/products/:id", productHandler.Delete)
 		auth.PUT("/products/:id/status", productHandler.UpdateStatus)
 		auth.POST("/products/:id/cards", productHandler.ImportCards)
+		auth.POST("/products/:id/image", productHandler.UploadImage)
 
 		// 商户订单管理
 		auth.GET("/orders", orderHandler.List)

@@ -87,6 +87,15 @@ func (s *ProductService) UpdateStatus(id uint, status int) error {
 	return s.repo.Update(product)
 }
 
+func (s *ProductService) UpdateImage(id uint, url string) error {
+	product, err := s.repo.FindByID(id)
+	if err != nil {
+		return err
+	}
+	product.Image = url
+	return s.repo.Update(product)
+}
+
 // ImportCards 导入卡密
 func (s *ProductService) ImportCards(productID uint, csvData string) (int, error) {
 	reader := csv.NewReader(strings.NewReader(csvData))

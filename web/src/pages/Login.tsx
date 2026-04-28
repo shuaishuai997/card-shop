@@ -28,7 +28,7 @@ export const Login: React.FC = () => {
         display: 'flex',
         justifyContent: 'center',
         alignItems: 'center',
-        minHeight: '100vh',
+  
         background: '#f0f2f5',
       }}
     >

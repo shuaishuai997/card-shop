@@ -121,6 +121,7 @@ const styles: Record<string, React.CSSProperties> = {
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
+    boxSizing: 'border-box',
     padding: '20px',
     position: 'relative',
     overflow: 'hidden',
