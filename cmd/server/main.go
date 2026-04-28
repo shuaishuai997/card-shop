@@ -47,6 +47,9 @@ func main() {
 	r := gin.Default()
 	r.Use(middleware.CORS())
 
+	// 静态文件服务（商品图片等）
+	r.Static("/uploads", "../web/public/uploads")
+
 	// 公开路由
 	api := r.Group("/api")
 	{

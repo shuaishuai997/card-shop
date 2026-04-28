@@ -336,6 +336,21 @@ const ProductManage: React.FC = () => {
 
   const columns = [
     { title: 'ID', dataIndex: 'id', width: 60 },
+    {
+      title: '图片',
+      dataIndex: 'image',
+      width: 80,
+      render: (v: string) =>
+        v ? (
+          <img
+            src={`${v}`}
+            alt=""
+            style={{ width: 50, height: 38, objectFit: 'cover', borderRadius: 4 }}
+          />
+        ) : (
+          <span style={{ color: '#4a4a6a', fontSize: 12 }}>—</span>
+        ),
+    },
     { title: '名称', dataIndex: 'name' },
     {
       title: '价格',

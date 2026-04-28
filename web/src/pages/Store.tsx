@@ -86,13 +86,13 @@ export const Store: React.FC = () => {
         <div style={styles.scanLine} />
 
         <div style={styles.heroContent}>
-          <div style={styles.heroBadge}>// 全自动发卡系统 v2.0</div>
+          <div style={styles.heroBadge}>// vx-LLOOVVEE_LL  </div>
           <h1 style={styles.heroTitle}>
             <span style={styles.titleCyber}>CYBER</span>
             <span style={styles.titleSlash}> / </span>
             <span style={styles.titleShop}>SHOP</span>
           </h1>
-          <p style={styles.heroSub}>全自动发卡 · 秒级交付 · 数字商品直通车</p>
+          <p style={styles.heroSub}> 秒级交付 · 数字商品直通车</p>
         </div>
 
         {/* 搜索 */}
