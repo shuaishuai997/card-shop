@@ -1,0 +1,19 @@
+server:
+  port: 8080
+  mode: debug
+  base_url: http://localhost:8080
+
+database:
+  type: mysql
+  host: 127.0.0.1
+  port: 3306
+  user: root
+  password: "root"
+  dbname: card_shop
+
+jwt:
+  secret: your-secret-key-change-in-production
+  expire_time: 168  # hours, 7 days
+
+payment:
+  notify_url: http://your-domain.com/api/payment/callback

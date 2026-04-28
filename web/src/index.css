@@ -1,0 +1,249 @@
+:root {
+  --text: #6b6375;
+  --text-h: #08060d;
+  --bg: #fff;
+  --border: #e5e4e7;
+  --code-bg: #f4f3ec;
+  --accent: #aa3bff;
+  --accent-bg: rgba(170, 59, 255, 0.1);
+  --accent-border: rgba(170, 59, 255, 0.5);
+  --social-bg: rgba(244, 243, 236, 0.5);
+  --shadow:
+    rgba(0, 0, 0, 0.1) 0 10px 15px -3px, rgba(0, 0, 0, 0.05) 0 4px 6px -2px;
+
+  --sans: system-ui, 'Segoe UI', Roboto, sans-serif;
+  --heading: system-ui, 'Segoe UI', Roboto, sans-serif;
+  --mono: ui-monospace, Consolas, monospace;
+
+  font: 18px/145% var(--sans);
+  letter-spacing: 0.18px;
+  color-scheme: light dark;
+  color: var(--text);
+  background: var(--bg);
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+
+  @media (max-width: 1024px) {
+    font-size: 16px;
+  }
+}
+
+.css-var-root.ant-modal-css-var {
+  --ant-modal-content-bg: #0a0a14 !important;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --text: #9ca3af;
+    --text-h: #f3f4f6;
+    --bg: #16171d;
+    --border: #2e303a;
+    --code-bg: #1f2028;
+    --accent: #c084fc;
+    --accent-bg: rgba(192, 132, 252, 0.15);
+    --accent-border: rgba(192, 132, 252, 0.5);
+    --social-bg: rgba(47, 48, 58, 0.5);
+    --shadow:
+      rgba(0, 0, 0, 0.4) 0 10px 15px -3px, rgba(0, 0, 0, 0.25) 0 4px 6px -2px;
+  }
+
+  #social .button-icon {
+    filter: invert(1) brightness(2);
+  }
+}
+
+#root {
+  max-width: 100%;
+  margin: 0 auto;
+  text-align: center;
+  border-inline: 1px solid var(--border);
+  min-height: 100svh;
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+}
+
+h1,
+h2 {
+  font-family: var(--heading);
+  font-weight: 500;
+  color: var(--text-h);
+}
+
+h1 {
+  font-size: 56px;
+  letter-spacing: -1.68px;
+  margin: 32px 0;
+  @media (max-width: 1024px) {
+    font-size: 36px;
+    margin: 20px 0;
+  }
+}
+h2 {
+  font-size: 24px;
+  line-height: 118%;
+  letter-spacing: -0.24px;
+  margin: 0 0 8px;
+  @media (max-width: 1024px) {
+    font-size: 20px;
+  }
+}
+p {
+  margin: 0;
+}
+
+code,
+.counter {
+  font-family: var(--mono);
+  display: inline-flex;
+  border-radius: 4px;
+  color: var(--text-h);
+}
+
+code {
+  font-size: 15px;
+  line-height: 135%;
+  padding: 4px 8px;
+  background: var(--code-bg);
+}
+
+/* ===== 赛博朋克全局覆盖 ===== */
+body {
+  background: #050510 !important;
+  color: #e0e0ff;
+}
+
+#root {
+  border-inline: none !important;
+  background: #050510 !important;
+  text-align: left !important;
+}
+
+/* Ant Design Modal 赛博风 */
+.ant-modal-content {
+  background: #0a0a14 !important;
+  border: 1px solid #00f0ff !important;
+  border-radius: 2px !important;
+  box-shadow: 0 0 30px rgba(0,240,255,0.12), inset 0 0 60px rgba(0,240,255,0.02) !important;
+}
+.ant-modal-header {
+  background: linear-gradient(180deg, rgba(0,240,255,0.08) 0%, transparent 100%) !important;
+  border-bottom: 1px solid #1a1a3a !important;
+  padding: 16px 20px 12px !important;
+}
+.ant-modal-body { padding: 20px !important; }
+.ant-modal-footer {
+  border-top: 1px solid #1a1a3a !important;
+  padding: 12px 20px !important;
+}
+.ant-modal-title {
+  color: #00f0ff !important;
+  font-family: 'Courier New', monospace !important;
+  font-size: 13px !important;
+  letter-spacing: 2px !important;
+  text-shadow: 0 0 8px rgba(0,240,255,0.5) !important;
+}
+.ant-modal-close { color: #4a4a6a !important; }
+.ant-modal-close:hover { color: #00f0ff !important; }
+.ant-modal-footer .ant-btn:not(.ant-btn-primary) {
+  background: #050510 !important;
+  border: 1px solid #1a1a3a !important;
+  color: #6a6a9a !important;
+  border-radius: 2px !important;
+}
+.ant-modal-footer .ant-btn-primary {
+  background: rgba(0,240,255,0.1) !important;
+  border: 1px solid #00f0ff !important;
+  color: #00f0ff !important;
+  border-radius: 2px !important;
+  box-shadow: 0 0 10px rgba(0,240,255,0.2) !important;
+}
+
+/* Ant Design Form 赛博风 */
+.ant-form-item-label > label {
+  color: #00f0ff !important;
+  font-family: 'Courier New', monospace !important;
+  font-size: 11px !important;
+  letter-spacing: 2px !important;
+  opacity: 0.7 !important;
+}
+.ant-form-item { margin-bottom: 16px !important; }
+
+/* Ant Design Input 赛博风 */
+.ant-input,
+.ant-input-number {
+  background: #050510 !important;
+  border: 1px solid #1a1a3a !important;
+  color: #ffffff !important;
+  font-family: 'Courier New', monospace !important;
+  border-radius: 2px !important;
+}
+.ant-input::placeholder { color: rgba(255,255,255,0.25) !important; }
+.ant-input:hover,
+.ant-input-number:hover { border-color: rgba(0,240,255,0.3) !important; }
+.ant-input:focus,
+.ant-input-number-focused {
+  border-color: #00f0ff !important;
+  box-shadow: 0 0 12px rgba(0,240,255,0.15) !important;
+  outline: none !important;
+}
+.ant-input-number-handler-wrap { background: #050510 !important; border-color: #1a1a3a !important; }
+.ant-input-number-handler { border-color: #1a1a3a !important; }
+.ant-input-number-handler-up-inner,
+.ant-input-number-handler-down-inner { color: #00f0ff !important; }
+
+/* Ant Design Table 赛博风 */
+.ant-table { background: transparent !important; }
+.ant-table-thead > tr > th {
+  background: rgba(0,240,255,0.06) !important;
+  border-bottom: 1px solid #1a1a3a !important;
+  color: #00f0ff !important;
+  font-family: 'Courier New', monospace !important;
+  font-size: 11px !important;
+  letter-spacing: 1px !important;
+}
+.ant-table-tbody > tr > td {
+  border-bottom: 1px solid #0d0d1a !important;
+  color: #ffffff !important;
+  font-family: 'Courier New', monospace !important;
+  font-size: 12px !important;
+}
+.ant-table-tbody > tr:hover > td { background: rgba(0,240,255,0.04) !important; }
+.ant-pagination-item {
+  background: #0a0a14 !important;
+  border-color: #1a1a3a !important;
+}
+.ant-pagination-item a { color: #6a6a9a !important; }
+.ant-pagination-item-active { border-color: #00f0ff !important; }
+.ant-pagination-item-active a { color: #00f0ff !important; }
+
+/* Ant Design 其他组件 */
+.ant-popconfirm .ant-popover-inner {
+  background: #0a0a14 !important;
+  border: 1px solid #1a1a3a !important;
+}
+.ant-popconfirm .ant-popover-message-title { color: #e0e0ff !important; }
+.ant-popconfirm .ant-popover-message-icon { color: #ff8800 !important; }
+
+/* 通用深色覆盖 */
+.ant-select-dropdown {
+  background: #0a0a14 !important;
+  border: 1px solid #1a1a3a !important;
+}
+.ant-select-item { color: #e0e0ff !important; }
+.ant-select-item-option-active { background: rgba(0,240,255,0.06) !important; }
+.ant-select-item-option-selected { background: rgba(0,240,255,0.1) !important; }
+
+/* Message 提示框 */
+.ant-message .ant-message-notice-content {
+  background: #0a0a14 !important;
+  border: 1px solid #00f0ff !important;
+  color: #00f0ff !important;
+  border-radius: 2px !important;
+}
