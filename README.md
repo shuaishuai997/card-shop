@@ -4,7 +4,6 @@
 
 ## 功能特性
 
-- ✅ 多商户入驻
 - ✅ 商品管理
 - ✅ 卡密批量导入
 - ✅ 自动发卡
@@ -66,14 +65,11 @@ npm run dev
 
 | 方法 | 路径 | 说明 |
 |------|------|------|
-| GET | /api/profile | 个人信息 |
-| PUT | /api/profile | 更新信息 |
-| GET | /api/merchant/products | 商户商品 |
 | POST | /api/merchant/products | 创建商品 |
 | PUT | /api/merchant/products/:id | 更新商品 |
 | DELETE | /api/merchant/products/:id | 删除商品 |
 | POST | /api/merchant/products/:id/cards | 导入卡密 |
-| GET | /api/merchant/orders | 商户订单 |
+
 
 ### 管理员
 
