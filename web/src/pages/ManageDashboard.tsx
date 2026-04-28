@@ -576,18 +576,6 @@ const OrderManage: React.FC = () => {
     }
   }
 
-  const handleDeliver = async (id: number) => {
-    try {
-      await api.put(`/orders/${id}/deliver`, {}, {
-        headers: { Authorization: `Bearer ${localStorage.getItem('manage_token')}` },
-      })
-      message.success('标记发货成功')
-      fetchOrders()
-    } catch {
-      message.error('操作失败')
-    }
-  }
-
   const statusMap: Record<number, { color: string; text: string }> = {
     0: { color: 'orange', text: '待支付' },
     1: { color: 'blue', text: '已支付·待发货' },
@@ -633,13 +621,6 @@ const OrderManage: React.FC = () => {
             <Popconfirm title="确定手动回调？将标记为已支付并分配卡密" onConfirm={() => handleManualCallback(record.id)}>
               <Button size="small" style={styles.smallBtnPrimary}>手动回调</Button>
             </Popconfirm>
-          )
-        }
-        if (record.pay_status === 1) {
-          return (
-            <Button size="small" style={styles.smallBtnPrimary} onClick={() => handleDeliver(record.id)}>
-              发货
-            </Button>
           )
         }
         return <span style={{ color: '#2a2a4a', fontSize: 11 }}>-</span>
