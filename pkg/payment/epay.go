@@ -28,8 +28,21 @@ func NewEpayClient(gatewayURL, pid, key, notifyURL, returnURL string) *EpayClien
 	}
 }
 
-// CreatePayment 创建支付
+// CreatePayment 创建支付（返回完整URL）
 func (c *EpayClient) CreatePayment(orderNo string, amount float64, payType string) string {
+	params := c.BuildPaymentParams(orderNo, amount, payType)
+
+	// 构建URL
+	values := url.Values{}
+	for k, v := range params {
+		values.Set(k, v)
+	}
+
+	return c.GatewayURL + "/submit.php?" + values.Encode()
+}
+
+// BuildPaymentParams 构建支付参数（返回map，供前端表单POST提交）
+func (c *EpayClient) BuildPaymentParams(orderNo string, amount float64, payType string) map[string]string {
 	params := map[string]string{
 		"pid":          c.PID,
 		"type":         payType,
@@ -45,13 +58,7 @@ func (c *EpayClient) CreatePayment(orderNo string, amount float64, payType strin
 	params["sign"] = sign
 	params["sign_type"] = "MD5"
 
-	// 构建URL
-	values := url.Values{}
-	for k, v := range params {
-		values.Set(k, v)
-	}
-
-	return c.GatewayURL + "/submit.php?" + values.Encode()
+	return params
 }
 
 // VerifyCallback 验证回调签名

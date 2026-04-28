@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import { useParams, useNavigate, Link } from 'react-router-dom'
-import { Card, Spin, Button, message, QRCode, Space } from 'antd'
-import { CheckCircleOutlined, CopyOutlined } from '@ant-design/icons'
+import { Spin, Button, message } from 'antd'
+import { CopyOutlined } from '@ant-design/icons'
 import { orderApi } from '../api/order'
 
 export const Payment: React.FC = () => {
@@ -9,23 +9,18 @@ export const Payment: React.FC = () => {
   const navigate = useNavigate()
   const [order, setOrder] = useState<any>(null)
   const [loading, setLoading] = useState(true)
-  const [payUrl, setPayUrl] = useState('')
   const [payMethod, setPayMethod] = useState<'alipay' | 'wxpay'>('alipay')
+  const [paying, setPaying] = useState(false)
   const [copied, setCopied] = useState(false)
 
   useEffect(() => {
-    if (orderNo) loadOrder(orderNo)
+    if (orderNo) loadOrder()
   }, [orderNo])
 
-  const loadOrder = async (no: string) => {
+  const loadOrder = async () => {
     try {
-      const res: any = await orderApi.get(no)
+      const res: any = await orderApi.get(orderNo!)
       setOrder(res.data)
-      if (res.data?.pay_status === 2) {
-        setLoading(false)
-        return
-      }
-      await fetchPayUrl(no, payMethod)
     } catch {
       message.error('订单不存在')
       navigate('/')
@@ -34,18 +29,38 @@ export const Payment: React.FC = () => {
     }
   }
 
-  const fetchPayUrl = async (no: string, type: 'alipay' | 'wxpay') => {
+  const handlePay = async () => {
+    if (!orderNo) return
+    setPaying(true)
     try {
-      const res: any = await orderApi.getPayUrl(no, type)
-      setPayUrl(res.data?.pay_url || '')
-    } catch {
-      // ignore
+      const res: any = await orderApi.createPayment(orderNo, payMethod)
+      const gatewayUrl = res.data?.gateway_url
+      const params = res.data?.params
+      if (gatewayUrl && params) {
+        // 用隐藏表单 POST 提交到易支付，不带URL参数
+        const form = document.createElement('form')
+        form.method = 'POST'
+        form.action = gatewayUrl
+        form.target = '_blank'
+        Object.entries(params).forEach(([key, value]) => {
+          const input = document.createElement('input')
+          input.type = 'hidden'
+          input.name = key
+          input.value = String(value)
+          form.appendChild(input)
+        })
+        document.body.appendChild(form)
+        form.submit()
+        document.body.removeChild(form)
+      } else {
+        message.error('获取支付参数失败')
+      }
+    } catch (err: any) {
+      const msg = err?.response?.data?.message || '创建支付失败'
+      message.error(msg)
+    } finally {
+      setPaying(false)
     }
-  }
-
-  const handleChangePayMethod = (type: 'alipay' | 'wxpay') => {
-    setPayMethod(type)
-    if (orderNo) fetchPayUrl(orderNo, type)
   }
 
   const handleCopy = () => {
@@ -70,7 +85,7 @@ export const Payment: React.FC = () => {
   }
 
   // 已支付
-  if (order?.pay_status === 2) {
+  if (order?.pay_status === 1) {
     return (
       <div style={styles.container}>
         <div style={styles.gridBg} />
@@ -88,15 +103,34 @@ export const Payment: React.FC = () => {
           <div style={styles.cardsSection}>
             <div style={styles.sectionLabel}>// YOUR CARD KEYS</div>
             <div style={styles.cardsList}>
-              {order.cards?.split('\n').map((card: string, index: number) => (
-                <div key={index} style={styles.cardItem}>
-                  <code style={styles.cardCode}>{card}</code>
-                </div>
-              )) || (
-                <div style={styles.cardItem}>
-                  <span style={{ color: '#ff8800', letterSpacing: 2 }}>// NO CARD DATA - CONTACT SUPPORT</span>
-                </div>
-              )}
+              {(() => {
+                try {
+                  const cards = typeof order.cards === 'string' ? JSON.parse(order.cards) : order.cards
+                  if (Array.isArray(cards) && cards.length > 0) {
+                    return cards.map((card: any, index: number) => (
+                      <div key={index} style={styles.cardItem}>
+                        <code style={styles.cardCode}>
+                          {card.card_no}{card.card_pwd ? ' | ' + card.card_pwd : ''}
+                        </code>
+                      </div>
+                    ))
+                  }
+                } catch {
+                  const lines = order.cards?.split('\n').filter((l: string) => l.trim())
+                  if (lines?.length > 0) {
+                    return lines.map((line: string, index: number) => (
+                      <div key={index} style={styles.cardItem}>
+                        <code style={styles.cardCode}>{line}</code>
+                      </div>
+                    ))
+                  }
+                }
+                return (
+                  <div style={styles.cardItem}>
+                    <span style={{ color: '#ff8800', letterSpacing: 2 }}>// NO CARD DATA - CONTACT SUPPORT</span>
+                  </div>
+                )
+              })()}
             </div>
           </div>
 
@@ -152,43 +186,36 @@ export const Payment: React.FC = () => {
         <div style={styles.sectionLabel}>/ SELECT PAYMENT METHOD</div>
         <div style={styles.payMethods}>
           <button
-            style={payMethod === 'alipay' ? styles.payBtnActive : styles.payBtn}
-            onClick={() => handleChangePayMethod('alipay')}
-          >
-            <span style={styles.payIcon}>支</span>
-            <span>支付宝</span>
-          </button>
-          <button
             style={payMethod === 'wxpay' ? styles.payBtnActive : styles.payBtn}
-            onClick={() => handleChangePayMethod('wxpay')}
+            onClick={() => setPayMethod('wxpay')}
           >
             <span style={styles.payIcon}>微</span>
             <span>微信支付</span>
           </button>
+          <button
+            style={payMethod === 'alipay' ? styles.payBtnActive : styles.payBtn}
+            onClick={() => setPayMethod('alipay')}
+          >
+            <span style={styles.payIcon}>支</span>
+            <span>支付宝</span>
+          </button>
         </div>
 
-        {/* 二维码 */}
-        <div style={styles.qrBox}>
-          {payUrl ? (
-            <QRCode
-              value={payUrl}
-              size={180}
-              bgColor="transparent"
-              color="#00f0ff"
-            />
-          ) : (
-            <div style={styles.qrPlaceholder}>
-              <Spin size="small" />
-              <p style={{ color: '#4a4a6a', marginTop: 12, letterSpacing: 2 }}>LOADING QR...</p>
-            </div>
-          )}
-        </div>
+        {/* 去支付按钮 */}
+        <Button
+          block
+          onClick={handlePay}
+          loading={paying}
+          style={styles.payActionBtn}
+        >
+          前往支付
+        </Button>
 
-        <p style={styles.hint}>// SCAN TO PAY · DO NOT CLOSE THIS PAGE</p>
+        <p style={styles.hint}>// 点击后跳转到支付页面完成付款</p>
 
         <Button
           block
-          onClick={() => loadOrder(orderNo || '')}
+          onClick={loadOrder}
           style={styles.queryBtn}
         >
           我已支付，查询结果
@@ -196,10 +223,6 @@ export const Payment: React.FC = () => {
       </div>
 
       <style>{`
-        @keyframes scan {
-          0% { top: -2px; }
-          100% { top: 100%; }
-        }
         @keyframes glow {
           0%, 100% { text-shadow: 0 0 10px #00f0ff, 0 0 20px #00f0ff; }
           50% { text-shadow: 0 0 20px #00f0ff, 0 0 40px #00f0ff, 0 0 60px #00f0ff; }
@@ -243,40 +266,32 @@ const styles: Record<string, React.CSSProperties> = {
   },
   cornerTL: {
     position: 'absolute' as const,
-    top: 0,
-    left: 0,
-    width: 24,
-    height: 24,
+    top: 0, left: 0,
+    width: 24, height: 24,
     borderTop: '2px solid #00f0ff',
     borderLeft: '2px solid #00f0ff',
     pointerEvents: 'none' as const,
   },
   cornerTR: {
     position: 'absolute' as const,
-    top: 0,
-    right: 0,
-    width: 24,
-    height: 24,
+    top: 0, right: 0,
+    width: 24, height: 24,
     borderTop: '2px solid #00f0ff',
     borderRight: '2px solid #00f0ff',
     pointerEvents: 'none' as const,
   },
   cornerBL: {
     position: 'absolute' as const,
-    bottom: 0,
-    left: 0,
-    width: 24,
-    height: 24,
+    bottom: 0, left: 0,
+    width: 24, height: 24,
     borderBottom: '2px solid #ff00aa',
     borderLeft: '2px solid #ff00aa',
     pointerEvents: 'none' as const,
   },
   cornerBR: {
     position: 'absolute' as const,
-    bottom: 0,
-    right: 0,
-    width: 24,
-    height: 24,
+    bottom: 0, right: 0,
+    width: 24, height: 24,
     borderBottom: '2px solid #ff00aa',
     borderRight: '2px solid #ff00aa',
     pointerEvents: 'none' as const,
@@ -385,23 +400,25 @@ const styles: Record<string, React.CSSProperties> = {
     fontSize: 16,
     fontWeight: 900,
   },
-  qrBox: {
-    textAlign: 'center' as const,
-    padding: 24,
-    background: '#0a0a14',
-    border: '1px solid #1a1a3a',
+  payActionBtn: {
+    background: 'rgba(0,240,255,0.15)',
+    border: '1px solid #00f0ff',
+    color: '#00f0ff',
+    fontFamily: "'Courier New', monospace",
+    letterSpacing: 4,
+    fontSize: 16,
+    fontWeight: 700,
+    height: 52,
     borderRadius: 6,
-    marginBottom: 16,
-  },
-  qrPlaceholder: {
-    padding: 20,
+    marginBottom: 12,
+    boxShadow: '0 0 16px rgba(0,240,255,0.3)',
   },
   hint: {
     color: '#4a4a6a',
     fontSize: 11,
     letterSpacing: 2,
     textAlign: 'center' as const,
-    marginBottom: 16,
+    marginBottom: 20,
   },
   queryBtn: {
     background: 'rgba(255,0,170,0.1)',

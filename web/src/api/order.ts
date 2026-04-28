@@ -26,8 +26,8 @@ export const orderApi = {
   // 公开接口
   create: (data: CreateOrderRequest) => api.post('/orders', data),
   get: (orderNo: string) => api.get(`/orders/${orderNo}`),
-  getPayUrl: (orderNo: string, type: 'alipay' | 'wxpay') =>
-    api.get(`/orders/${orderNo}/pay`, { params: { type } }),
+  createPayment: (orderNo: string, type: 'alipay' | 'wxpay') =>
+    api.post(`/orders/${orderNo}/pay`, { type }),
   queryByBuyer: (email: string, page = 1) =>
     api.get('/orders/query', { params: { email, page } }),
 

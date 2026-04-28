@@ -49,10 +49,16 @@ func (h *OrderHandler) Create(c *gin.Context) {
 	})
 }
 
-// GetPayURL 获取支付链接
-func (h *OrderHandler) GetPayURL(c *gin.Context) {
+// CreatePayment 创建支付（POST）
+func (h *OrderHandler) CreatePayment(c *gin.Context) {
 	orderNo := c.Param("order_no")
-	payType := c.Query("type") // alipay or wxpay
+	var req struct {
+		PayType string `json:"type" binding:"required"` // alipay or wxpay
+	}
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"code": 400, "message": "请指定支付方式"})
+		return
+	}
 
 	order, err := h.service.GetByOrderNo(orderNo)
 	if err != nil {
@@ -66,20 +72,34 @@ func (h *OrderHandler) GetPayURL(c *gin.Context) {
 	}
 
 	// 获取支付配置
-	config, err := h.paymentRepo.FindByMerchantAndType(order.MerchantID, payType)
+	config, err := h.paymentRepo.FindByMerchantAndType(order.MerchantID, req.PayType)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"code": 400, "message": "支付方式未配置"})
 		return
 	}
 
-	// 生成支付链接
-	client := payment.NewEpayClient(config.GatewayURL, config.PID, config.Key, config.NotifyURL, config.ReturnURL)
-	payURL := client.CreatePayment(order.OrderNo, order.PayAmount, payType)
+	// 构建回调地址
+	notifyURL := config.NotifyURL
+	if notifyURL == "" {
+		notifyURL = "http://localhost:8080/api/payment/callback"
+	}
+	// return_url 跳回前端支付结果页
+	returnURL := config.ReturnURL
+	if returnURL == "" {
+		returnURL = "http://localhost:5176/payment/" + orderNo
+	} else {
+		returnURL = returnURL + "?order_no=" + orderNo
+	}
+
+	// 生成支付参数
+	client := payment.NewEpayClient(config.GatewayURL, config.PID, config.Key, notifyURL, returnURL)
+	params := client.BuildPaymentParams(order.OrderNo, order.PayAmount, req.PayType)
 
 	c.JSON(http.StatusOK, gin.H{
 		"code": 0,
 		"data": gin.H{
-			"pay_url": payURL,
+			"gateway_url": config.GatewayURL + "/submit.php",
+			"params":      params,
 		},
 	})
 }
@@ -186,6 +206,29 @@ func (h *OrderHandler) List(c *gin.Context) {
 			"page_size": pageSize,
 		},
 	})
+}
+
+// ManualCallback 手动回调（管理员手动标记已支付）
+func (h *OrderHandler) ManualCallback(c *gin.Context) {
+	id, _ := strconv.ParseUint(c.Param("id"), 10, 32)
+
+	order, err := h.service.GetByID(uint(id))
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"code": 404, "message": "订单不存在"})
+		return
+	}
+
+	if order.PayStatus == 1 {
+		c.JSON(http.StatusBadRequest, gin.H{"code": 400, "message": "订单已支付，无需回调"})
+		return
+	}
+
+	if err := h.service.PaymentCallback(order.OrderNo, "MANUAL_"+order.OrderNo, "manual"); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"code": 500, "message": "回调失败: " + err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"code": 0, "message": "手动回调成功"})
 }
 
 // QueryByBuyer 买家查询订单

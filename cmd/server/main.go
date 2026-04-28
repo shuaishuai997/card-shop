@@ -64,7 +64,7 @@ func main() {
 		// 订单
 		api.POST("/orders", orderHandler.Create)
 		api.GET("/orders/:order_no", orderHandler.GetByOrderNo)
-		api.GET("/orders/:order_no/pay", orderHandler.GetPayURL)
+		api.POST("/orders/:order_no/pay", orderHandler.CreatePayment)
 		api.GET("/orders/query", orderHandler.QueryByBuyer)
 
 		// 支付回调
@@ -94,6 +94,9 @@ func main() {
 		auth.GET("/orders", orderHandler.List)
 		auth.GET("/merchant/orders", orderHandler.List)
 		auth.GET("/merchant/orders/:id", orderHandler.Get)
+
+		// 订单手动回调
+		auth.POST("/orders/callback/:id", orderHandler.ManualCallback)
 
 		// 支付配置管理
 		auth.GET("/payment-configs", paymentHandler.List)

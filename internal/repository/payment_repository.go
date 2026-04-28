@@ -2,7 +2,6 @@ package repository
 
 import (
 	"card-shop/internal/model"
-
 	"gorm.io/gorm"
 )
 
@@ -35,7 +34,7 @@ func (r *PaymentConfigRepository) ListByMerchant(merchantID uint) ([]model.Payme
 }
 
 func (r *PaymentConfigRepository) Update(config *model.PaymentConfig) error {
-	return r.db.Save(config).Error
+	return r.db.Model(config).Select("pay_type", "gateway_url", "pid", "key", "notify_url", "return_url", "status", "merchant_id").Updates(config).Error
 }
 
 func (r *PaymentConfigRepository) Delete(id uint) error {

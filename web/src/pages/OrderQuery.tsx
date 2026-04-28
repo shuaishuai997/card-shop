@@ -41,8 +41,8 @@ export const OrderQuery: React.FC = () => {
   const getStatusTag = (status: number) => {
     switch (status) {
       case 0: return <Tag style={styles.tagOrange}>待支付</Tag>
-      case 1: return <Tag style={styles.tagBlue}>支付中</Tag>
-      case 2: return <Tag style={styles.tagGreen}>已完成</Tag>
+      case 1: return <Tag style={styles.tagGreen}>已完成</Tag>
+      case 2: return <Tag style={styles.tagRed}>已退款</Tag>
       default: return <Tag style={styles.tagRed}>异常</Tag>
     }
   }
@@ -191,15 +191,32 @@ export const OrderQuery: React.FC = () => {
               ))}
             </div>
 
-            {selectedOrder.pay_status === 2 && selectedOrder.cards && (
+            {selectedOrder.pay_status === 1 && selectedOrder.cards && (
               <div style={styles.cardsBlock}>
                 <div style={styles.cardsLabel}>// CARD KEYS</div>
                 <div style={styles.cardsList}>
-                  {selectedOrder.cards.split('\n').map((card, index) => (
-                    <div key={index} style={styles.cardItem}>
-                      <code style={styles.cardCode}>{card}</code>
-                    </div>
-                  ))}
+                  {(() => {
+                    try {
+                      const cards = typeof selectedOrder.cards === 'string' ? JSON.parse(selectedOrder.cards) : selectedOrder.cards
+                      if (Array.isArray(cards) && cards.length > 0) {
+                        return cards.map((card: any, index: number) => (
+                          <div key={index} style={styles.cardItem}>
+                            <code style={styles.cardCode}>{card.card_no}{card.card_pwd ? ' | ' + card.card_pwd : ''}</code>
+                          </div>
+                        ))
+                      }
+                    } catch {
+                      const lines = selectedOrder.cards.split('\n').filter((l: string) => l.trim())
+                      if (lines.length > 0) {
+                        return lines.map((line: string, index: number) => (
+                          <div key={index} style={styles.cardItem}>
+                            <code style={styles.cardCode}>{line}</code>
+                          </div>
+                        ))
+                      }
+                    }
+                    return null
+                  })()}
                 </div>
               </div>
             )}

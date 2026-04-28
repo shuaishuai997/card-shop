@@ -122,7 +122,7 @@ type PaymentConfig struct {
 	MerchantID   uint           `gorm:"index;not null" json:"merchant_id"`
 	PayType      string         `gorm:"size:20;not null" json:"pay_type"` // alipay, wxpay
 	GatewayURL   string         `gorm:"size:255;not null" json:"gateway_url"`
-	PID          string         `gorm:"size:50;not null" json:"pid"`
+	PID          string         `gorm:"column:pid;size:50;not null" json:"pid"`
 	Key          string         `gorm:"size:100;not null" json:"key"`
 	NotifyURL    string         `gorm:"size:255" json:"notify_url"`
 	ReturnURL    string         `gorm:"size:255" json:"return_url"`

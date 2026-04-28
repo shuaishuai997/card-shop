@@ -564,6 +564,18 @@ const OrderManage: React.FC = () => {
 
   useEffect(() => { fetchOrders() }, [])
 
+  const handleManualCallback = async (id: number) => {
+    try {
+      await api.post(`/orders/callback/${id}`, {}, {
+        headers: { Authorization: `Bearer ${localStorage.getItem('manage_token')}` },
+      })
+      message.success('手动回调成功，卡密已分配')
+      fetchOrders()
+    } catch (err: any) {
+      message.error(err?.response?.data?.message || '回调失败')
+    }
+  }
+
   const handleDeliver = async (id: number) => {
     try {
       await api.put(`/orders/${id}/deliver`, {}, {
@@ -614,15 +626,24 @@ const OrderManage: React.FC = () => {
     },
     {
       title: '操作',
-      width: 90,
-      render: (_: any, record: any) =>
-        record.pay_status === 1 ? (
-          <Button size="small" style={styles.smallBtnPrimary} onClick={() => handleDeliver(record.id)}>
-            发货
-          </Button>
-        ) : (
-          <span style={{ color: '#2a2a4a', fontSize: 11 }}>-</span>
-        ),
+      width: 120,
+      render: (_: any, record: any) => {
+        if (record.pay_status === 0) {
+          return (
+            <Popconfirm title="确定手动回调？将标记为已支付并分配卡密" onConfirm={() => handleManualCallback(record.id)}>
+              <Button size="small" style={styles.smallBtnPrimary}>手动回调</Button>
+            </Popconfirm>
+          )
+        }
+        if (record.pay_status === 1) {
+          return (
+            <Button size="small" style={styles.smallBtnPrimary} onClick={() => handleDeliver(record.id)}>
+              发货
+            </Button>
+          )
+        }
+        return <span style={{ color: '#2a2a4a', fontSize: 11 }}>-</span>
+      },
     },
   ]
 
