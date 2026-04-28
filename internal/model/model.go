@@ -82,6 +82,7 @@ type Order struct {
 	Cards        string         `gorm:"type:text" json:"cards"`         // 已发卡密JSON
 	CouponID     uint           `json:"coupon_id"`
 	DiscountAmount float64      `gorm:"default:0" json:"discount_amount"`
+	Product      *Product       `gorm:"foreignKey:ProductID" json:"product"`
 }
 
 // Category 商品分类

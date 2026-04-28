@@ -44,7 +44,7 @@ func (r *OrderRepository) ListByMerchant(merchantID uint, page, pageSize int, pa
 	}
 
 	query.Count(&total)
-	err := query.Offset((page - 1) * pageSize).Limit(pageSize).Order("id desc").Find(&orders).Error
+	err := query.Preload("Product").Offset((page - 1) * pageSize).Limit(pageSize).Order("id desc").Find(&orders).Error
 	return orders, total, err
 }
 
@@ -54,6 +54,6 @@ func (r *OrderRepository) ListByBuyer(email string, page, pageSize int) ([]model
 
 	query := r.db.Model(&model.Order{}).Where("buyer_email = ?", email)
 	query.Count(&total)
-	err := query.Offset((page - 1) * pageSize).Limit(pageSize).Order("id desc").Find(&orders).Error
+	err := query.Preload("Product").Offset((page - 1) * pageSize).Limit(pageSize).Order("id desc").Find(&orders).Error
 	return orders, total, err
 }
